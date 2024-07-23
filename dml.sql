@@ -48,7 +48,7 @@ INSERT INTO bicicleta (id_modelo_bicicleta, id_marca_bicicleta, precio, stock) V
 INSERT INTO cliente (nombre_cliente, correo_electronico, telefono, id_ciudad) VALUES 
 ('Juan Perez', 'juan.perez@example.com', 600123456, 1),
 ('Ana García', 'ana.garcia@example.com', 600234567, 2),
-('Camilo Sánchez', 'camilo.sanchez@example.com', 600345678, 3),
+('Carlos Sánchez', 'carlos.sanchez@example.com', 600345678, 3),
 ('Lucía Martínez', 'lucia.martinez@example.com', 600456789, 4),
 ('Pedro Fernández', 'pedro.fernandez@example.com', 600567890, 5),
 ('María López', 'maria.lopez@example.com', 600678901, 6),

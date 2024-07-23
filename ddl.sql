@@ -2,13 +2,13 @@ CREATE DATABASE campusbike;
 USE campusbike;
 
 CREATE TABLE pais (
-    id INT AUTO_INCREMENT,
+    id INT NOT NULL AUTO_INCREMENT,
     nombre_pais VARCHAR(20),
     CONSTRAINT pk_id_pais PRIMARY KEY (id)
 );
 
 CREATE TABLE ciudad (
-    id INT AUTO_INCREMENT,
+    id INT NOT NULL AUTO_INCREMENT,
     nombre_ciudad VARCHAR(20),
     id_pais INT,
     CONSTRAINT pk_id_ciudad PRIMARY KEY (id),
@@ -16,13 +16,13 @@ CREATE TABLE ciudad (
 );
 
 CREATE TABLE marca_bicicleta (
-    id INT AUTO_INCREMENT,
+    id INT NOT NULL AUTO_INCREMENT,
     nombre_marca VARCHAR(20),
     CONSTRAINT pk_id_marca PRIMARY KEY (id)
 );
 
 CREATE TABLE modelo_bicicleta (
-    id INT AUTO_INCREMENT,
+    id INT NOT NULL AUTO_INCREMENT,
     nombre_modelo VARCHAR(20),
     id_marca_bicicleta INT,
     CONSTRAINT pk_id_modelo PRIMARY KEY (id),
@@ -30,29 +30,29 @@ CREATE TABLE modelo_bicicleta (
 );
 
 CREATE TABLE bicicleta (
-    id INT AUTO_INCREMENT,
+    id INT NOT NULL AUTO_INCREMENT,
     id_modelo_bicicleta INT,
     id_marca_bicicleta INT,
     precio DOUBLE,
     stock INT,
     CONSTRAINT pk_id_bicicleta PRIMARY KEY (id),
     CONSTRAINT fk_id_modelo_bicicleta FOREIGN KEY (id_modelo_bicicleta) REFERENCES modelo_bicicleta(id),
-    CONSTRAINT fk_id_marca_bicicleta FOREIGN KEY (id_marca_bicicleta) REFERENCES marca_bicicleta(id),
+    CONSTRAINT fk_id_marca_ FOREIGN KEY (id_marca_bicicleta) REFERENCES marca_bicicleta(id),
     CONSTRAINT chk_precio_stock CHECK (precio > 0 AND stock > 0)
 );
 
 CREATE TABLE cliente (
-    id INT AUTO_INCREMENT,
+    id INT NOT NULL AUTO_INCREMENT,
     nombre_cliente VARCHAR(20),
-    correo_electronico VARCHAR(20) UNIQUE,
-    telefono INT UNIQUE,
+    correo_electronico VARCHAR(50) UNIQUE,
+    telefono VARCHAR(15) UNIQUE,
     id_ciudad INT,
     CONSTRAINT pk_id_cliente PRIMARY KEY (id),
     CONSTRAINT fk_id_ciudad FOREIGN KEY (id_ciudad) REFERENCES ciudad(id)
 );
 
 CREATE TABLE venta (
-    id INT AUTO_INCREMENT,
+    id INT NOT NULL AUTO_INCREMENT,
     fecha_venta DATE,
     id_cliente INT,
     total DOUBLE,
@@ -62,7 +62,7 @@ CREATE TABLE venta (
 );
 
 CREATE TABLE detalle_venta (
-    id INT AUTO_INCREMENT,
+    id INT NOT NULL AUTO_INCREMENT,
     id_venta INT,
     id_bicicleta INT,
     cantidad INT,
@@ -74,18 +74,18 @@ CREATE TABLE detalle_venta (
 );
 
 CREATE TABLE proveedor (
-    id INT AUTO_INCREMENT,
+    id INT NOT NULL AUTO_INCREMENT,
     nombre_proveedor VARCHAR(20) UNIQUE,
     nombre_contacto VARCHAR(20),
-    telefono INT UNIQUE,
-    correo_electronico VARCHAR(20) UNIQUE,
+    telefono VARCHAR(15) UNIQUE,
+    correo_electronico VARCHAR(50) UNIQUE,
     id_ciudad INT,
     CONSTRAINT pk_id_proveedor PRIMARY KEY (id),
     CONSTRAINT fk_id_ciudad_proveedor FOREIGN KEY (id_ciudad) REFERENCES ciudad(id)
 );
 
 CREATE TABLE repuesto (
-    id INT AUTO_INCREMENT,
+    id INT NOT NULL AUTO_INCREMENT,
     nombre_repuesto VARCHAR(20),
     descripcion_repuesto TEXT,
     precio DOUBLE,
@@ -97,7 +97,7 @@ CREATE TABLE repuesto (
 );
 
 CREATE TABLE compra (
-    id INT AUTO_INCREMENT,
+    id INT NOT NULL AUTO_INCREMENT,
     fecha_compra DATE,
     id_proveedor INT,
     total DOUBLE,
@@ -107,7 +107,7 @@ CREATE TABLE compra (
 );
 
 CREATE TABLE detalle_compra (
-    id INT AUTO_INCREMENT,
+    id INT NOT NULL AUTO_INCREMENT,
     id_compra INT,
     id_repuesto INT,
     cantidad INT,
