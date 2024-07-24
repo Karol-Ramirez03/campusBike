@@ -1,0 +1,110 @@
+DELIMITER $$ 
+DROP TRIGGER IF EXISTS validar_campos_obligatorios_ins$$
+CREATE TRIGGER validar_campos_obligatorios_ins
+BEFORE INSERT ON bicicleta
+FOR EACH ROW
+BEGIN
+    IF NEW.modelo IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El campo modelo es OBLIGATORIO y no puede ser NULL';
+    END IF;
+    IF NEW.marca IS NULL THEN 
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El campo marca es OBLIGATORIO y no puede ser NULL';
+    END IF;
+    IF NEW.precio IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El campo precio es OBLIGATORIO y no puede ser NULL';
+    END IF;
+    IF NEW.stock IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El campo stock es OBLIGATORIO y no puede ser NULL';
+    END IF;
+END$$
+DELIMITER ;
+
+
+            -- TRIGGER PARA BEFORE UPDATE --
+DELIMITER $$ 
+DROP TRIGGER IF EXISTS validar_campos_obligatorios_upd$$
+CREATE TRIGGER validar_campos_obligatorios_upd
+BEFORE UPDATE ON bicicleta
+FOR EACH ROW
+BEGIN
+    IF NEW.modelo IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El campo modelo es OBLIGATORIO y no puede ser NULL';
+    END IF;
+    IF NEW.marca IS NULL THEN 
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El campo marca es OBLIGATORIO y no puede ser NULL';
+    END IF;
+    IF NEW.precio IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El campo precio es OBLIGATORIO y no puede ser NULL';
+    END IF;
+    IF NEW.stock IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El campo stock es OBLIGATORIO y no puede ser NULL';
+    END IF;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER ValidarAntesDeActualizarBicicleta
+BEFORE UPDATE ON Bicicletas
+FOR EACH ROW
+BEGIN
+    -- Validar que el precio sea mayor que 0
+    IF NEW.Precio <= 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El precio debe ser mayor que 0';
+    END IF;
+
+    -- Validar que el stock no sea negativo
+    IF NEW.Stock < 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El stock no puede ser negativo';
+    END IF;
+END$$
+
+CREATE TRIGGER ValidarAntesDeEliminarBicicleta
+BEFORE DELETE ON Bicicletas
+FOR EACH ROW
+BEGIN
+    DECLARE ventasExistentes INT;
+
+    -- Contar cuántas ventas referencian la bicicleta a eliminar
+    SELECT COUNT(*) INTO ventasExistentes
+    FROM DetallesVentas
+    WHERE BicicletaID = OLD.ID;
+
+    -- Si hay ventas que referencian la bicicleta, se genera un error
+    IF ventasExistentes > 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'No se puede eliminar la bicicleta porque hay ventas asociadas a ella';
+    END IF;
+END;
+
+CREATE PROCEDURE EliminarBicicleta(
+    IN pID INT
+)
+BEGIN
+    DECLARE ventasExistentes INT;
+
+    -- Contar cuántas ventas referencian la bicicleta a eliminar
+    SELECT COUNT(*) INTO ventasExistentes
+    FROM DetallesVentas
+    WHERE BicicletaID = pID;
+
+    -- Si hay ventas que referencian la bicicleta, se genera un error
+    IF ventasExistentes > 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'No se puede eliminar la bicicleta porque hay ventas asociadas a ella';
+    ELSE
+        -- Eliminar la bicicleta
+        DELETE FROM Bicicletas
+        WHERE ID = pID;
+    END IF;
+END;
