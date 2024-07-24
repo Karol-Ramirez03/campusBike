@@ -1,0 +1,33 @@
+// El sistema guarda los detalles de la compra y actualiza el stock de los repuestos comprados.
+
+
+CREATE PROCEDURE insertDetalleCompra(
+    IN id_compraidc INT
+    IN id_repuestoidc INT
+    IN cantidadidc INT
+)
+BEGIN
+    //insert 
+    DECLARE precio_unitario_repuesto DOUBLE;
+    DECLARE total_compra DOUBLE,
+
+    SELECT precio INTO precio_unitario_repuesto
+    FROM repuesto
+    WHERE id = id_repuesto;
+
+    SET total_compra = precio_unitario * cantidad;
+
+    INSERT INTO detalle_compra(id_compra, id_repuesto, cantidad, precio_unitario)
+    VALUES (id_compraidc, id_repuestoidc, cantidadidc, recio_unitario_repuesto);
+
+    UPDATE compra
+    SET total = total + total_compra
+    WHERE id = id_compraidc;
+
+    UPDATE repuesto
+    SET stock = stock + cantidadidc
+    WHERE id = id_repuestoidc;
+
+END$$
+
+DELIMITER ;

@@ -35,6 +35,8 @@ CREATE TABLE bicicleta (
     id_marca_bicicleta INT,
     precio DOUBLE,
     stock INT,
+
+    
     CONSTRAINT pk_id_bicicleta PRIMARY KEY (id),
     CONSTRAINT fk_id_modelo_bicicleta FOREIGN KEY (id_modelo_bicicleta) REFERENCES modelo_bicicleta(id),
     CONSTRAINT fk_id_marca_ FOREIGN KEY (id_marca_bicicleta) REFERENCES marca_bicicleta(id),

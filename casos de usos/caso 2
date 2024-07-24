@@ -1,94 +1,64 @@
-DELIMITER //
+//nuuevas ventas y detalles venta y actualizar el stock
+procedimiento de insert y triggers para verificar el stock
 
-CREATE TRIGGER ActualizarTotalVenta
-AFTER INSERT ON DetallesVentas
-FOR EACH ROW
+
+
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS registrarDetalleVenta$$
+CREATE PROCEDURE RegistrarDetalleVenta(
+    IN inVentaId INT,
+    IN inBicicletaId INT,
+    IN inCantidad INT
+)
+
 BEGIN
-    DECLARE vTotal DECIMAL(10, 2);
+    DECLARE precioUnitario DECIMAL(10, 2);
+    DECLARE totalDetalle DECIMAL(10, 2);
     
-    -- Calcular el nuevo total de la venta
-    SELECT SUM(Cantidad * PrecioUnitario) INTO vTotal
-    FROM DetallesVentas
-    WHERE VentaID = NEW.VentaID;
+    -- Obtener el precio unitario de la bicicleta --
+    SELECT precio INTO precioUnitario
+    FROM bicicleta
+    WHERE id = inBicicletaId;
     
-    -- Actualizar el total en la tabla Ventas
-    UPDATE Ventas
-    SET Total = vTotal
-    WHERE ID = NEW.VentaID;
-END;
-
-//
-
+    -- Calcular el total del detalle
+    SET totalDetalle = precioUnitario * inCantidad;
+    
+    -- Insertar el detalle de la venta
+    INSERT INTO detalleVenta (ventaId, bicicletaId, cantidad, precioUnitario)
+    VALUES (inVentaId, inBicicletaId, inCantidad, precioUnitario);
+    
+    -- Actualizar el total de la venta --
+    UPDATE venta
+    SET total = total + totalDetalle
+    WHERE id = inVentaId;
+    
+    -- Actualizar el inventario de bicicletas --
+    UPDATE bicicleta
+    SET stock = stock - inCantidad
+    WHERE id = inBicicletaId;
+END $$
 DELIMITER ;
 
+triggers
 
 
-CREATE TRIGGER ActualizarStockBicicletas
-AFTER INSERT ON DetallesVentas
-FOR EACH ROW
-BEGIN
-    UPDATE Bicicletas
-    SET Stock = Stock - NEW.Cantidad
-    WHERE ID = NEW.BicicletaID;
-END;
-
-
-CREATE TRIGGER ValidarStockVenta
-BEFORE INSERT ON DetallesVentas
+DELIMITER $$
+DROP TRIGGER IF EXISTS verificarStockAntesDeVenta$$
+CREATE TRIGGER verificarStockAntesDeVenta
+BEFORE INSERT ON detalleVenta
 FOR EACH ROW
 BEGIN
     DECLARE stockActual INT;
     
-    -- Obtener el stock actual de la bicicleta
-    SELECT Stock INTO stockActual
-    FROM Bicicletas
-    WHERE ID = NEW.BicicletaID;
+    -- Obtener el stock actual de la bicicleta --
+    SELECT stock INTO stockActual
+    FROM bicicleta
+    WHERE id = NEW.bicicletaId;
     
-    -- Verificar si la cantidad a vender es mayor al stock disponible
-    IF NEW.Cantidad > stockActual THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Cantidad de bicicletas a vender excede el stock disponible.';
+    -- Verificar que el stock sea suficiente --
+    IF stockActual < NEW.Cantidad THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Stock insuficiente para la bicicleta seleccionada';
     END IF;
-END;
-
-
-CREATE PROCEDURE RegistrarVenta (
-    IN p_Fecha DATE,
-    IN p_ClienteID INT,
-    IN p_BicicletaID1 INT,
-    IN p_Cantidad1 INT,
-    IN p_PrecioUnitario1 DECIMAL(10, 2),
-    IN p_BicicletaID2 INT,
-    IN p_Cantidad2 INT,
-    IN p_PrecioUnitario2 DECIMAL(10, 2)
-)
-BEGIN
-    DECLARE v_VentaID INT;
-    DECLARE v_Total DECIMAL(10, 2);
-    
-    -- Insertar la venta
-    INSERT INTO Ventas (Fecha, ClienteID, Total) VALUES (p_Fecha, p_ClienteID, 0);
-    
-    -- Obtener el ID de la venta recién insertada
-    SET v_VentaID = LAST_INSERT_ID();
-    
-    -- Insertar los detalles de la venta
-    INSERT INTO DetallesVentas (VentaID, BicicletaID, Cantidad, PrecioUnitario) VALUES
-    (v_VentaID, p_BicicletaID1, p_Cantidad1, p_PrecioUnitario1),
-    (v_VentaID, p_BicicletaID2, p_Cantidad2, p_PrecioUnitario2);
-    
-    -- Calcular el total de la venta
-    SELECT SUM(Cantidad * PrecioUnitario) INTO v_Total
-    FROM DetallesVentas
-    WHERE VentaID = v_VentaID;
-    
-    -- Actualizar el total de la venta
-    UPDATE Ventas
-    SET Total = v_Total
-    WHERE ID = v_VentaID;
-    
-    -- Actualizar el stock de las bicicletas
-    UPDATE Bicicletas
-    SET Stock = Stock - (SELECT SUM(Cantidad) FROM DetallesVentas WHERE BicicletaID = Bicicletas.ID AND VentaID = v_VentaID)
-    WHERE ID IN (p_BicicletaID1, p_BicicletaID2);
-END;
+END $$
+DELIMITER ;
