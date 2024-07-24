@@ -1,13 +1,10 @@
-
-
-![alt text](<img/image.png>)
-
+![alt text](img/image.png)
 
 # Casos de Uso para la Base de Datos
 
-        Karol Ramirez - Laura Torres
+  ### Karol Ramirez - Laura Torres
 
-###    Caso de Uso 1: Gestión de Inventario de Bicicletas
+### Caso de Uso 1: Gestión de Inventario de Bicicletas
 
 **Descripción: Este caso de uso describe cómo el sistema gestiona el inventario de bicicletas,**
 **permitiendo agregar nuevas bicicletas, actualizar la información existente y eliminar bicicletas que**
@@ -20,37 +17,28 @@ Administrador de Inventario
 ##### Flujo Principal:
 
 1. El administrador de inventario ingresa al sistema.
-
 2. El administrador selecciona la opción para agregar una nueva bicicleta.
-
 3. El administrador ingresa los detalles de la bicicleta (modelo, marca, precio, stock).
-
-    ```sql
-   INSERT INTO (id_bike_model, price, stock) VALUES (5, 5, 2200.00, 6);
-   ```
-
 4. El sistema valida y guarda la información de la nueva bicicleta.
 
-    ```sql
-   
+   ```sql
+
    ```
 
 5. El administrador selecciona una bicicleta existente para actualizar.
-
-    ```sql
-   
-   ```
 6. El administrador actualiza la información (precio, stock).
-
-    ```sql
-   
-   ```
-
 7. El sistema valida y guarda los cambios.
 
-8. El administrador selecciona una bicicleta para eliminar.
+   ```sql
 
+   ```
+
+8. El administrador selecciona una bicicleta para eliminar.
 9. El sistema elimina la bicicleta seleccionada del inventario.
+
+   ```sql
+
+   ```
 
 ### Caso de Uso 2: Registro de Ventas
 
@@ -70,8 +58,17 @@ Vendedor
 3. El vendedor selecciona el cliente que realiza la compra.
 4. El vendedor selecciona las bicicletas que el cliente desea comprar y especifica la cantidad.
 5. El sistema calcula el total de la venta.
+
+```sql
+
+   ```
+
 6. El vendedor confirma la venta.
 7. El sistema guarda la venta y actualiza el inventario de bicicletas.
+
+```sql
+
+   ```
 
 ### Caso de Uso 3: Gestión de Proveedores y Repuestos
 
@@ -88,22 +85,83 @@ Administrador de Proveedores
 1. El administrador de proveedores ingresa al sistema.
 2. El administrador selecciona la opción para agregar un nuevo proveedor.
 3. El administrador ingresa los detalles del proveedor (nombre, contacto, teléfono, correo
-  electrónico, ciudad).
+   electrónico, ciudad).
 4. El sistema valida y guarda la información del nuevo proveedor.
+
+  ```sql
+  DELIMITER //
+
+  CREATE PROCEDURE insertar_proveedor (
+      IN nombre_proveedor VARCHAR(50),
+      IN nombre_contacto VARCHAR(50),
+      IN telefono VARCHAR(20),
+      IN correo_electronico VARCHAR(100),
+      IN id_ciudad INT
+
+  )
+  BEGIN
+      DECLARE proveedor_existente INT;
+
+      SELECT COUNT(*) INTO proveedor_existente
+      FROM proveedor
+      WHERE nombre_proveedor = nombre_proveedor
+        OR telefono = telefono
+        OR correo_electronico = correo_electronico;
+      IF proveedor_existente = 0 THEN
+          INSERT INTO proveedor (nombre_proveedor, nombre_contacto, telefono, correo_electronico, id_ciudad)
+          VALUES (nombre_proveedor, nombre_contacto, telefono, correo_electronico, id_ciudad);
+      ELSE
+          SIGNAL SQLSTATE '45000'
+          SET MESSAGE_TEXT = 'El proveedor ya existe con el mismo nombre, teléfono o correo electrónico';
+      END IF;
+
+  END //
+
+  DELIMITER ;
+
+```
+```sql
+  CALL insertar_proveedor('Proveedor H', 'Contacto H', '608901234', 'contacto.h@example.com', 1);
+```
+
 5. El administrador selecciona la opción para agregar un nuevo repuesto.
 6. El administrador ingresa los detalles del repuesto (nombre, descripción, precio, stock,
-  proveedor).
+proveedor).
 7. El sistema valida y guarda la información del nuevo repuesto.
+
+```sql
+
+   ```
+
 8. El administrador selecciona un proveedor existente para actualizar.
 9. El administrador actualiza la información del proveedor.
 10. El sistema valida y guarda los cambios.
+
+```sql
+
+   ```
+
 11. El administrador selecciona un repuesto existente para actualizar.
 12. El administrador actualiza la información del repuesto.
 13. El sistema valida y guarda los cambios.
+
+```sql
+
+   ```
+
 14. El administrador selecciona un proveedor para eliminar.
 15. El sistema elimina el proveedor seleccionado.
+
+```sql
+
+   ```
+
 16. El administrador selecciona un repuesto para eliminar.
 17. El sistema elimina el repuesto seleccionado.
+
+```sql
+
+   ```
 
 ### Caso de Uso 4: Consulta de Historial de Ventas por Cliente
 
@@ -122,9 +180,18 @@ Administrador
 2. El usuario selecciona la opción para consultar el historial de ventas.
 3. El usuario selecciona el cliente del cual desea ver el historial.
 4. El sistema muestra todas las ventas realizadas por el cliente seleccionado.
+
+```sql
+
+   ```
+
 5. El usuario selecciona una venta específica para ver los detalles.
 6. El sistema muestra los detalles de la venta seleccionada (bicicletas compradas, cantidad,
-  precio).
+precio).
+
+```sql
+
+   ```
 
 ### Caso de Uso 5: Gestión de Compras de Repuestos
 
@@ -143,9 +210,18 @@ Administrador de Compras
 3. El administrador selecciona el proveedor al que se realizó la compra.
 4. El administrador ingresa los detalles de la compra (fecha, total).
 5. El sistema guarda la compra y genera un identificador único.
+
+```sql
+
+   ```
+
 6. El administrador selecciona los repuestos comprados y especifica la cantidad y el precio
-  unitario.
+unitario.
 7. El sistema guarda los detalles de la compra y actualiza el stock de los repuestos comprados.
+
+```sql
+
+   ```
 
 ## Casos de Uso con Subconsultas
 
@@ -164,7 +240,7 @@ Administrador
 1. El usuario ingresa al sistema.
 2. El usuario selecciona la opción para consultar las bicicletas más vendidas por marca.
 3. El sistema muestra una lista de marcas y el modelo de bicicleta más vendido para cada
-  marca.
+marca.
 
 ### Caso de Uso 7: Clientes con Mayor Gasto en un Año Específico
 
@@ -179,10 +255,10 @@ Administrador
 
 1. El administrador ingresa al sistema.
 2. El administrador selecciona la opción para consultar los clientes con mayor gasto en un año
-  específico.
+específico.
 3. El administrador ingresa el año deseado.
 4. El sistema muestra una lista de los clientes que han gastado más en ese año, ordenados por
-  total gastado.
+total gastado.
 
 ### Caso de Uso 8: Proveedores con Más Compras en el Último Mes
 
@@ -197,9 +273,9 @@ Administrador de Compras
 
 1. El administrador de compras ingresa al sistema.
 2. El administrador selecciona la opción para consultar los proveedores con más compras en el
-  último mes.
+último mes.
 3. El sistema muestra una lista de proveedores ordenados por el número de compras recibidas
-  en el último mes.
+en el último mes.
 
 Caso de Uso 9: Repuestos con Menor Rotación en el Inventario
 Descripción: Este caso de uso describe cómo el sistema permite consultar los repuestos que han
@@ -211,7 +287,7 @@ Flujo Principal:
 1. El administrador de inventario ingresa al sistema.
 2. El administrador selecciona la opción para consultar los repuestos con menor rotación.
 3. El sistema muestra una lista de repuestos ordenados por la cantidad vendida, de menor a
-  mayor.
+mayor.
 
 Caso de Uso 10: Ciudades con Más Ventas Realizadas
 Descripción: Este caso de uso describe cómo el sistema permite consultar las ciudades donde se
@@ -223,7 +299,7 @@ Flujo Principal:
 1. El administrador ingresa al sistema.
 2. El administrador selecciona la opción para consultar las ciudades con más ventas realizadas.
 3. El sistema muestra una lista de ciudades ordenadas por la cantidad de ventas realizadas.
-  Casos de Uso con Joins
+Casos de Uso con Joins
 
 Caso de Uso 11: Consulta de Ventas por Ciudad
 Descripción: Este caso de uso describe cómo el sistema permite consultar el total de ventas
@@ -256,9 +332,9 @@ Flujo Principal:
 
 1. El administrador de compras ingresa al sistema.
 2. El administrador selecciona la opción para consultar las compras de repuestos por
-  proveedor.
+proveedor.
 3. El sistema muestra una lista de proveedores con el total de repuestos comprados a cada
-  uno.
+uno.
 
 Caso de Uso 14: Clientes con Ventas en un Rango de Fechas
 Descripción: Este caso de uso describe cómo el sistema permite consultar los clientes que han
@@ -272,80 +348,80 @@ Flujo Principal:
 2. El usuario selecciona la opción para consultar los clientes con ventas en un rango de fechas.
 3. El usuario ingresa las fechas de inicio y fin del rango.
 4. El sistema muestra una lista de clientes que han realizado compras dentro del rango de
-  fechas especificado.
-  Casos de Uso para Implementar Procedimientos
-  Almacenados
-  Caso de Uso 1: Actualización de Inventario de Bicicletas
-  Descripción: Este caso de uso describe cómo el sistema actualiza el inventario de bicicletas
-  cuando se realiza una venta.
-  Actores:
-  Vendedor
-  Flujo Principal:
+fechas especificado.
+Casos de Uso para Implementar Procedimientos
+Almacenados
+Caso de Uso 1: Actualización de Inventario de Bicicletas
+Descripción: Este caso de uso describe cómo el sistema actualiza el inventario de bicicletas
+cuando se realiza una venta.
+Actores:
+Vendedor
+Flujo Principal:
 5. El vendedor ingresa al sistema.
 6. El vendedor registra una venta de bicicletas.
 7. El sistema llama a un procedimiento almacenado para actualizar el inventario de las
-  bicicletas vendidas.
+bicicletas vendidas.
 8. El procedimiento almacenado actualiza el stock de cada bicicleta.
-  Caso de Uso 2: Registro de Nueva Venta
-  Descripción: Este caso de uso describe cómo el sistema registra una nueva venta, incluyendo la
-  creación de la venta y la inserción de los detalles de la venta.
-  Actores:
-  Vendedor
-  Flujo Principal:
+Caso de Uso 2: Registro de Nueva Venta
+Descripción: Este caso de uso describe cómo el sistema registra una nueva venta, incluyendo la
+creación de la venta y la inserción de los detalles de la venta.
+Actores:
+Vendedor
+Flujo Principal:
 9. El vendedor ingresa al sistema.
 10. El vendedor registra una nueva venta.
 11. El sistema llama a un procedimiento almacenado para registrar la venta y sus detalles.
 12. El procedimiento almacenado inserta la venta y sus detalles en las tablas correspondientes.
-   Caso de Uso 3: Generación de Reporte de Ventas por Cliente
-   Descripción: Este caso de uso describe cómo el sistema genera un reporte de ventas para un
-   cliente específico, mostrando todas las ventas realizadas por el cliente y los detalles de cada venta.
-   Actores:
-   Administrador
-   Flujo Principal:
+Caso de Uso 3: Generación de Reporte de Ventas por Cliente
+Descripción: Este caso de uso describe cómo el sistema genera un reporte de ventas para un
+cliente específico, mostrando todas las ventas realizadas por el cliente y los detalles de cada venta.
+Actores:
+Administrador
+Flujo Principal:
 13. El administrador ingresa al sistema.
 14. El administrador selecciona un cliente para generar un reporte de ventas.
 15. El sistema llama a un procedimiento almacenado para generar el reporte.
 16. El procedimiento almacenado obtiene las ventas y los detalles de las ventas realizadas por el
-   cliente.
-   Caso de Uso 4: Registro de Compra de Repuestos
-   Descripción: Este caso de uso describe cómo el sistema registra una nueva compra de repuestos
-   a un proveedor.
-   Actores:
-   Administrador de Compras
-   Flujo Principal:
+cliente.
+Caso de Uso 4: Registro de Compra de Repuestos
+Descripción: Este caso de uso describe cómo el sistema registra una nueva compra de repuestos
+a un proveedor.
+Actores:
+Administrador de Compras
+Flujo Principal:
 17. El administrador de compras ingresa al sistema.
 18. El administrador registra una nueva compra.
 19. El sistema llama a un procedimiento almacenado para registrar la compra y sus detalles.
 20. El procedimiento almacenado inserta la compra y sus detalles en las tablas correspondientes
-   y actualiza el stock de repuestos.
-   Caso de Uso 5: Generación de Reporte de Inventario
-   Descripción: Este caso de uso describe cómo el sistema genera un reporte de inventario de
-   bicicletas y repuestos.
-   Actores:
-   Administrador de Inventario
-   Flujo Principal:
+y actualiza el stock de repuestos.
+Caso de Uso 5: Generación de Reporte de Inventario
+Descripción: Este caso de uso describe cómo el sistema genera un reporte de inventario de
+bicicletas y repuestos.
+Actores:
+Administrador de Inventario
+Flujo Principal:
 21. El administrador de inventario ingresa al sistema.
 22. El administrador solicita un reporte de inventario.
 23. El sistema llama a un procedimiento almacenado para generar el reporte.
 24. El procedimiento almacenado obtiene la información del inventario de bicicletas y repuestos.
-   Caso de Uso 6: Actualización Masiva de Precios
-   Descripción: Este caso de uso describe cómo el sistema permite actualizar masivamente los
-   precios de todas las bicicletas de una marca específica.
-   Actores:
-   Administrador
-   Flujo Principal:
+Caso de Uso 6: Actualización Masiva de Precios
+Descripción: Este caso de uso describe cómo el sistema permite actualizar masivamente los
+precios de todas las bicicletas de una marca específica.
+Actores:
+Administrador
+Flujo Principal:
 25. El administrador ingresa al sistema.
 26. El administrador selecciona la opción para actualizar los precios de una marca específica.
 27. El administrador ingresa la marca y el porcentaje de incremento.
 28. El sistema llama a un procedimiento almacenado para actualizar los precios.
 29. El procedimiento almacenado actualiza los precios de todas las bicicletas de la marca
-   especificada.
-   Caso de Uso 7: Generación de Reporte de Clientes por Ciudad
-   Descripción: Este caso de uso describe cómo el sistema genera un reporte de clientes agrupados
-   por ciudad.
-   Actores:
-   Administrador
-   Flujo Principal:
+especificada.
+Caso de Uso 7: Generación de Reporte de Clientes por Ciudad
+Descripción: Este caso de uso describe cómo el sistema genera un reporte de clientes agrupados
+por ciudad.
+Actores:
+Administrador
+Flujo Principal:
 30. El administrador ingresa al sistema.
 31. El administrador selecciona la opción para generar un reporte de clientes por ciudad.
 32. El sistema llama a un procedimiento almacenado para generar el reporte.
@@ -566,3 +642,4 @@ Flujo Principal:
 
 3. El sistema llama a un procedimiento almacenado para calcular el total de ventas.
 4. El procedimiento almacenado devuelve el total de ventas agrupadas por año y mes.
+```

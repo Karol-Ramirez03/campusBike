@@ -1,1 +1,29 @@
+4. El sistema valida y guarda la información del nuevo proveedor.
 
+  DELIMITER //
+
+  CREATE PROCEDURE insertar_proveedor (
+      IN nombre_proveedor VARCHAR(50),
+      IN nombre_contacto VARCHAR(50),
+      IN telefono VARCHAR(20),
+      IN correo_electronico VARCHAR(100),
+      IN id_ciudad INT
+  )
+  BEGIN
+      DECLARE proveedor_existente INT;
+
+      SELECT COUNT(*) INTO proveedor_existente
+      FROM proveedor
+      WHERE nombre_proveedor = nombre_proveedor
+        OR telefono = telefono
+        OR correo_electronico = correo_electronico;
+      IF proveedor_existente = 0 THEN
+          INSERT INTO proveedor (nombre_proveedor, nombre_contacto, telefono, correo_electronico, id_ciudad)
+          VALUES (nombre_proveedor, nombre_contacto, telefono, correo_electronico, id_ciudad);
+      ELSE
+          SIGNAL SQLSTATE '45000'
+          SET MESSAGE_TEXT = 'El proveedor ya existe con el mismo nombre, teléfono o correo electrónico';
+      END IF;
+
+  END //
+  DELIMITER ;
