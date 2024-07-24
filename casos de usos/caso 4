@@ -1,0 +1,31 @@
+4. El sistema muestra todas las ventas realizadas por el cliente seleccionado.
+
+
+DELIMITER $$
+
+CREATE PROCEDURE ventasRealizadaPorCliente(IN id VARCHAR(60))
+BEGIN
+    SELECT id, fecha, ClienteID, Total 
+    FROM Ventas 
+    WHERE ClienteID = id;
+END$$
+
+DELIMITER ;
+
+6. El sistema muestra los detalles de la venta seleccionada (bicicletas compradas, cantidad,
+precio).
+
+DELIMITER $$
+
+CREATE PROCEDURE DetallesVentasRealizadaPorCliente(IN id VARCHAR(60))
+BEGIN
+    SELECT v.id, v.fecha, v.ClienteID, v.Total, d.BicicletaID, d.Cantidad, d.PrecioUnitario
+    FROM Ventas v
+    JOIN DetallesVentas d ON v.id = d.VentaID
+    WHERE v.ClienteID = id;
+END$$
+
+DELIMITER ;
+
+
+
