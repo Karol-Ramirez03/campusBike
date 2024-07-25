@@ -3,11 +3,11 @@
 
 DELIMITER $$
 
-CREATE PROCEDURE ventasRealizadaPorCliente(IN id VARCHAR(60))
+CREATE PROCEDURE ventasRealizadaPorCliente(IN id INT)
 BEGIN
     SELECT id, fecha_venta, id_cliente, total 
     FROM venta 
-    WHERE id_cliente = 1;
+    WHERE id_cliente = id;
 END$$
 
 DELIMITER ;
@@ -17,13 +17,13 @@ DELIMITER ;
 precio).
 
 DELIMITER $$
-
+DROP PROCEDURE IF EXISTS DetallesVentasRealizadaPorCliente$$
 CREATE PROCEDURE DetallesVentasRealizadaPorCliente(IN id VARCHAR(60))
 BEGIN
-    SELECT v.id, v.fecha, v.ClienteID, v.Total, d.BicicletaID, d.Cantidad, d.PrecioUnitario
-    FROM Ventas v
-    JOIN DetallesVentas d ON v.id = d.VentaID
-    WHERE v.ClienteID = id;
+    SELECT v.id, v.fecha_venta, v.id_cliente, v.total, d.id_bicicleta, d.Cantidad, d.Precio_unitario
+    FROM Venta v
+    JOIN detalle_Venta d ON v.id = d.id_venta
+    WHERE v.id_cliente = id;
 END$$
 
 DELIMITER ;

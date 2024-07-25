@@ -1,15 +1,16 @@
 // El sistema guarda los detalles de la compra y actualiza el stock de los repuestos comprados.
 
+DELIMITER $$
 
+DROP PROCEDURE IF EXISTS insertDetalleCompra$$
 CREATE PROCEDURE insertDetalleCompra(
-    IN id_compraidc INT
-    IN id_repuestoidc INT
+    IN id_compraidc INT,
+    IN id_repuestoidc INT,
     IN cantidadidc INT
 )
 BEGIN
-    //insert 
     DECLARE precio_unitario_repuesto DOUBLE;
-    DECLARE total_compra DOUBLE,
+    DECLARE total_compra DOUBLE;
 
     SELECT precio INTO precio_unitario_repuesto
     FROM repuesto
@@ -31,3 +32,19 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS actualizarStockRepuestos$$
+CREATE TRIGGER actualizarStockRepuestos
+AFTER INSERT ON detalle_compra
+FOR EACH ROW
+BEGIN
+    UPDATE repuesto
+    SET stock = stock + NEW.cantidad
+    WHERE id = NEW.id_repuesto;
+END $$
+DELIMITER ;
+
+
+-- TESTEADO Y FUNCIONANDO --
