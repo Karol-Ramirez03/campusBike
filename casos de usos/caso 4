@@ -5,12 +5,13 @@ DELIMITER $$
 
 CREATE PROCEDURE ventasRealizadaPorCliente(IN id VARCHAR(60))
 BEGIN
-    SELECT id, fecha, ClienteID, Total 
-    FROM Ventas 
-    WHERE ClienteID = id;
+    SELECT id, fecha_venta, id_cliente, total 
+    FROM venta 
+    WHERE id_cliente = 1;
 END$$
 
 DELIMITER ;
+
 
 6. El sistema muestra los detalles de la venta seleccionada (bicicletas compradas, cantidad,
 precio).

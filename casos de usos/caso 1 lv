@@ -1,0 +1,115 @@
+/*crear procedimiento para el insert de bicicletas*/
+
+
+DELIMITER$$
+CREATE PROCEDURE addBicicleta(
+    IN newModelo VARCHAR(255),
+    IN newMarca VARCHAR(255),
+    IN newPrecio DECIMAL(10, 2),
+    IN newStock INT
+)
+BEGIN
+    INSERT INTO bicicleta (id_modelo_bicicleta, id_marca_bicicleta, precio, stock) VALUES 
+    (newModelo, newMarca, newPrecio, newStock),
+END$$
+DELIMITER ;
+
+-- ACTUALIZAR BICI POR EL STOCK Y PRECIO
+
+DELIMITER $$
+CREATE PROCEDURE updateStockBici(
+    IN BicicletaId INT,
+    IN Precio DOUBLE,
+    IN Stock INT
+)
+BEGIN
+    UPDATE bicicleta
+    SET precio = Precio, stock = Stock
+    WHERE id = BicicletaId;
+END$$
+DELIMITER ;
+
+--DELETE PROCEDIMENTO
+
+DELIMITER $$
+CREATE PROCEDURE deleteBici(
+    IN idBici INT
+)
+BEGIN
+    DELETE FROM bicicleta
+    WHERE id = idBici;
+END$$
+DELIMITER ;
+
+
+--triggers para verificar las entradas
+
+
+CREATE TRIGGER validar_campos_obligatorios
+BEFORE INSERT ON bicicleta
+FOR EACH ROW
+BEGIN
+    IF NEW.id_modelo_bicicleta IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El campo modelo es OBLIGATORIO y no puede ser NULL';
+    END IF;
+    IF NEW.id_marca_bicicleta IS NULL THEN 
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El campo marca es OBLIGATORIO y no puede ser NULL';
+    END IF;
+    IF NEW.precio IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El campo precio es OBLIGATORIO y no puede ser NULL';
+    END IF;
+    IF NEW.stock IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El campo stock es OBLIGATORIO y no puede ser NULL';
+    END IF;
+END$$
+DELIMITER ;
+
+
+--verificar
+
+DELIMITER $$
+DROP TRIGGER IF EXISTS stockNegativoIns $$
+CREATE TRIGGER stockNegativoIns
+BEFORE INSERT ON bicicleta
+FOR EACH ROW
+BEGIN
+    IF NEW.stock < 0 OR NEW.precio < 0 THEN -- Si se inserta un valor negativo para el stock --
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El "STOCK" y el "PRECIO" no pueden ser negativo'; -- Enviar un mensaje --
+    END IF;
+END $$
+DELIMITER ;
+
+
+    -- !!!!!!!!! BEFORE UPDATE !!!!!!!! --
+DELIMITER $$
+DROP TRIGGER IF EXISTS stockNegativoUpd$$
+CREATE TRIGGER stockNegativoUpd
+BEFORE UPDATE ON bicicleta
+FOR EACH ROW
+BEGIN
+    IF NEW.stock < 0 OR NEW.precio < 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El "STOCK" y el "PRECIO" no pueden ser negativo';
+    END IF;
+END $$
+DELIMITER ;
+
+
+DELIMITER $$ 
+DROP TRIGGER IF EXISTS validar_campos_obligatorios_upd$$
+CREATE TRIGGER validar_campos_obligatorios_upd
+BEFORE UPDATE ON bicicleta
+FOR EACH ROW
+BEGIN
+    IF NEW.precio IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El campo precio es OBLIGATORIO y no puede ser NULL';
+    END IF;
+    IF NEW.stock IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El campo stock es OBLIGATORIO y no puede ser NULL';
+    END IF;
+END$$

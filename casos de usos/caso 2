@@ -1,21 +1,26 @@
-DELIMITER //
+//nuuevas ventas y detalles venta y actualizar el stock
+procedimiento de insert y triggers para verificar el stock
 
-CREATE TRIGGER ActualizarTotalVenta
-AFTER INSERT ON DetallesVentas
-FOR EACH ROW
+
+
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS registrarDetalleVenta$$
+CREATE PROCEDURE RegistrarDetalleVenta(
+    IN inVentaId INT,
+    IN inBicicletaId INT,
+    IN inCantidad INT
+)
+
 BEGIN
     DECLARE vTotal DECIMAL(10, 2);
-
-    /**
-    * *Calcular el nuevo total de la venta*
-    */
+    
+    -- Calcular el nuevo total de la venta
     SELECT SUM(Cantidad * PrecioUnitario) INTO vTotal
     FROM DetallesVentas
     WHERE VentaID = NEW.VentaID;
     
-    /**
-    * *Actualizar el total en la tabla Ventas*
-    */
+    -- Actualizar el total en la tabla Ventas
     UPDATE Ventas
     SET Total = vTotal
     WHERE ID = NEW.VentaID;
@@ -24,6 +29,7 @@ END;
 //
 
 DELIMITER ;
+
 
 
 CREATE TRIGGER ActualizarStockBicicletas
@@ -42,16 +48,12 @@ FOR EACH ROW
 BEGIN
     DECLARE stockActual INT;
     
-    /**
-    * *Obtener el stock actual de la bicicleta*
-    */
+    -- Obtener el stock actual de la bicicleta
     SELECT Stock INTO stockActual
     FROM Bicicletas
     WHERE ID = NEW.BicicletaID;
-
-    /**
-    * *Verificar si la cantidad a vender es mayor al stock disponible*
-    */
+    
+    -- Verificar si la cantidad a vender es mayor al stock disponible
     IF NEW.Cantidad > stockActual THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Cantidad de bicicletas a vender excede el stock disponible.';
@@ -72,24 +74,19 @@ CREATE PROCEDURE RegistrarVenta (
 BEGIN
     DECLARE v_VentaID INT;
     DECLARE v_Total DECIMAL(10, 2);
-    /**
-    * *Inserta la venta*
-    */
-    INSERT INTO Ventas (Fecha, ClienteID, Total) VALUES (p_Fecha, p_ClienteID, 0);
-    /**
-    * *Inserta la venta*
-    */
     
+    -- Insertar la venta
+    INSERT INTO Ventas (Fecha, ClienteID, Total) VALUES (p_Fecha, p_ClienteID, 0);
+    
+    -- Obtener el ID de la venta recién insertada
     SET v_VentaID = LAST_INSERT_ID();
-    /**
-    * *Insertar los detalles de la venta*
-    */
+    
+    -- Insertar los detalles de la venta
     INSERT INTO DetallesVentas (VentaID, BicicletaID, Cantidad, PrecioUnitario) VALUES
     (v_VentaID, p_BicicletaID1, p_Cantidad1, p_PrecioUnitario1),
     (v_VentaID, p_BicicletaID2, p_Cantidad2, p_PrecioUnitario2);
-     /**
-    * *Calcular el total de la venta*
-    */
+    
+    -- Calcular el total de la venta
     SELECT SUM(Cantidad * PrecioUnitario) INTO v_Total
     FROM DetallesVentas
     WHERE VentaID = v_VentaID;
