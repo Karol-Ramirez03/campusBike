@@ -2,8 +2,6 @@
 procedimiento de insert y triggers para verificar el stock
 
 
-
-
 DELIMITER $$
 DROP PROCEDURE IF EXISTS registrarDetalleVenta$$
 CREATE PROCEDURE RegistrarDetalleVenta(
@@ -11,34 +9,34 @@ CREATE PROCEDURE RegistrarDetalleVenta(
     IN inBicicletaId INT,
     IN inCantidad INT
 )
-
 BEGIN
     DECLARE precioUnitario DECIMAL(10, 2);
     DECLARE totalDetalle DECIMAL(10, 2);
-    
-    -- Obtener el precio unitario de la bicicleta --
+    DECLARE totalActual DECIMAL(10, 2);
+
     SELECT precio INTO precioUnitario
     FROM bicicleta
     WHERE id = inBicicletaId;
-    
-    -- Calcular el total del detalle
+
     SET totalDetalle = precioUnitario * inCantidad;
-    
-    -- Insertar el detalle de la venta
-    INSERT INTO detalleVenta (ventaId, bicicletaId, cantidad, precioUnitario)
+
+    INSERT INTO detalle_Venta (id_venta, id_bicicleta, cantidad, precio_unitario)
     VALUES (inVentaId, inBicicletaId, inCantidad, precioUnitario);
-    
-    -- Actualizar el total de la venta --
-    UPDATE venta
-    SET total = total + totalDetalle
+
+    SELECT COALESCE(total, 0) INTO totalActual
+    FROM venta
     WHERE id = inVentaId;
-    
-    -- Actualizar el inventario de bicicletas --
+
+    UPDATE venta
+    SET total = totalActual + totalDetalle
+    WHERE id = inVentaId;
+
     UPDATE bicicleta
     SET stock = stock - inCantidad
     WHERE id = inBicicletaId;
 END $$
 DELIMITER ;
+
 
 triggers
 
@@ -46,7 +44,7 @@ triggers
 DELIMITER $$
 DROP TRIGGER IF EXISTS verificarStockAntesDeVenta$$
 CREATE TRIGGER verificarStockAntesDeVenta
-BEFORE INSERT ON detalleVenta
+BEFORE INSERT ON detalle_Venta
 FOR EACH ROW
 BEGIN
     DECLARE stockActual INT;
@@ -54,10 +52,10 @@ BEGIN
     -- Obtener el stock actual de la bicicleta --
     SELECT stock INTO stockActual
     FROM bicicleta
-    WHERE id = NEW.bicicletaId;
+    WHERE id = NEW.id_bicicleta;
     
     -- Verificar que el stock sea suficiente --
-    IF stockActual < NEW.Cantidad THEN
+    IF stockActual < NEW.cantidad THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Stock insuficiente para la bicicleta seleccionada';
     END IF;
 END $$
