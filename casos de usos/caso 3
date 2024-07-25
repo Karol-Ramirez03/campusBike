@@ -27,3 +27,97 @@
 
   END //
   DELIMITER ;
+
+7.El sistema valida y guarda la información del nuevo repuesto.
+
+DELIMITER //
+
+CREATE PROCEDURE insertar_repuesto(
+    IN p_nombre_repuesto VARCHAR(20),
+    IN p_descripcion_repuesto TEXT,
+    IN p_precio DOUBLE,
+    IN p_stock INT,
+    IN p_id_proveedor INT
+)
+BEGIN
+    -- Verificar que el proveedor exista
+    IF NOT EXISTS (SELECT 1 FROM proveedor WHERE id = p_id_proveedor) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Proveedor no existe';
+    END IF;
+
+    -- Verificar restricciones de precio y stock
+    IF p_precio <= 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El precio debe ser mayor que cero';
+    END IF;
+    
+    IF p_stock < 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El stock no puede ser negativo';
+    END IF;
+
+    -- Insertar el nuevo repuesto
+    INSERT INTO repuesto (nombre_repuesto, descripcion_repuesto, precio, stock, id_proveedor)
+    VALUES (p_nombre_repuesto, p_descripcion_repuesto, p_precio, p_stock, p_id_proveedor);
+END //
+
+DELIMITER ;
+
+10. El sistema valida y guarda los cambios.
+
+DELIMITER //
+
+CREATE PROCEDURE actualizar_proveedor(
+    IN p_id INT,
+    IN p_nombre_proveedor VARCHAR(20),
+    IN p_nombre_contacto VARCHAR(20),
+    IN p_telefono VARCHAR(15),
+    IN p_correo_electronico VARCHAR(50),
+    IN p_id_ciudad INT
+)
+BEGIN
+    -- Verificar que el proveedor existe
+    IF NOT EXISTS (SELECT 1 FROM proveedor WHERE id = p_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Proveedor no existe';
+    END IF;
+
+    -- Verificar que la ciudad existe
+    IF NOT EXISTS (SELECT 1 FROM ciudad WHERE id = p_id_ciudad) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Ciudad no existe';
+    END IF;
+
+    -- Verificar que el nombre del proveedor sea único (excepto para sí mismo)
+    IF EXISTS (SELECT 1 FROM proveedor WHERE nombre_proveedor = p_nombre_proveedor AND id <> p_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El nombre del proveedor ya existe';
+    END IF;
+
+    -- Verificar que el correo electrónico sea único (excepto para sí mismo)
+    IF EXISTS (SELECT 1 FROM proveedor WHERE correo_electronico = p_correo_electronico AND id <> p_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El correo electrónico ya existe';
+    END IF;
+
+    -- Verificar que el teléfono sea único (excepto para sí mismo)
+    IF EXISTS (SELECT 1 FROM proveedor WHERE telefono = p_telefono AND id <> p_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El teléfono ya existe';
+    END IF;
+
+    -- Actualizar el proveedor
+    UPDATE proveedor
+    SET nombre_proveedor = p_nombre_proveedor,
+        nombre_contacto = p_nombre_contacto,
+        telefono = p_telefono,
+        correo_electronico = p_correo_electronico,
+        id_ciudad = p_id_ciudad
+    WHERE id = p_id;
+END //
+
+DELIMITER ;
+
+-- Llamada al procedimiento almacenado para actualizar un proveedor
+CALL actualizar_proveedor(1, 'Nuevo Proveedor A', 'Nuevo Contacto A', '601234567', 'nuevo.contacto.a@example.com', 2);
