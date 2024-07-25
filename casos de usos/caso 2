@@ -58,5 +58,5 @@ BEGIN
     IF stockActual < NEW.cantidad THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Stock insuficiente para la bicicleta seleccionada';
     END IF;
-END $$
-DELIMITER ;
+END;
+
