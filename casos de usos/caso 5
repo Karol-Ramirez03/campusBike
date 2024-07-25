@@ -14,20 +14,17 @@ BEGIN
 
     SELECT precio INTO precio_unitario_repuesto
     FROM repuesto
-    WHERE id = id_repuesto;
+    WHERE id = id_repuestoidc;
 
-    SET total_compra = precio_unitario * cantidad;
+    SET total_compra = precio_unitario_repuesto * cantidadidc;
 
     INSERT INTO detalle_compra(id_compra, id_repuesto, cantidad, precio_unitario)
-    VALUES (id_compraidc, id_repuestoidc, cantidadidc, recio_unitario_repuesto);
+    VALUES (id_compraidc, id_repuestoidc, cantidadidc, precio_unitario_repuesto);
 
     UPDATE compra
     SET total = total + total_compra
     WHERE id = id_compraidc;
 
-    UPDATE repuesto
-    SET stock = stock + cantidadidc
-    WHERE id = id_repuestoidc;
 
 END$$
 
@@ -47,4 +44,3 @@ END $$
 DELIMITER ;
 
 
--- TESTEADO Y FUNCIONANDO --
