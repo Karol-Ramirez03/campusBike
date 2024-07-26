@@ -2,6 +2,30 @@
 procedimiento de insert y triggers para verificar el stock
 
 
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&6
+comprobar insert venta
+DELIMITER $$ 
+DROP PROCEDURE IF EXISTS registrarVenta$$
+CREATE PROCEDURE registrarVenta(
+    IN inClienteId VARCHAR(10),
+    OUT outVentaId INT 
+) 
+BEGIN 
+    /* Se crea una nueva venta con total inicial de 0
+        para que luego el sistema calcule el total en
+        base a los detalles de la venta */
+    INSERT INTO venta(fecha,clienteId,total)
+    VALUES (NOW(), inClienteId, 0);
+
+    /* Se saca el valor del id para utilizarlo luego */
+    SET outVentaId = LAST_INSERT_ID();
+END $$
+DELIMITER ;
+
+
+
+
 DELIMITER $$
 DROP PROCEDURE IF EXISTS registrarDetalleVenta$$
 CREATE PROCEDURE RegistrarDetalleVenta(
