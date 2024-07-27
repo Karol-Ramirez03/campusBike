@@ -241,38 +241,80 @@ Administrador de Proveedores
   ```sql
   DELIMITER //
 
-  CREATE PROCEDURE insertar_proveedor (
-      IN nombre_proveedor VARCHAR(50),
-      IN nombre_contacto VARCHAR(50),
-      IN telefono VARCHAR(20),
-      IN correo_electronico VARCHAR(100),
-      IN id_ciudad INT
+CREATE PROCEDURE insertar_proveedor(
+    IN p_nombre_proveedor VARCHAR(20),
+    IN p_nombre_contacto VARCHAR(20),
+    IN p_telefono VARCHAR(15),
+    IN p_correo_electronico VARCHAR(50),
+    IN p_id_ciudad INT
+)
+BEGIN
+    DECLARE proveedor_existe INT;
+    DECLARE ciudad_existe INT;
 
-  )
-  BEGIN
-      DECLARE proveedor_existente INT;
+    -- Validar que el nombre del proveedor no esté vacío
+    IF p_nombre_proveedor IS NULL OR p_nombre_proveedor = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El nombre del proveedor no puede estar vacío';
+    END IF;
 
-      SELECT COUNT(*) INTO proveedor_existente
-      FROM proveedor
-      WHERE nombre_proveedor = nombre_proveedor
-        OR telefono = telefono
-        OR correo_electronico = correo_electronico;
-      IF proveedor_existente = 0 THEN
-          INSERT INTO proveedor (nombre_proveedor, nombre_contacto, telefono, correo_electronico, id_ciudad)
-          VALUES (nombre_proveedor, nombre_contacto, telefono, correo_electronico, id_ciudad);
-      ELSE
-          SIGNAL SQLSTATE '45000'
-          SET MESSAGE_TEXT = 'El proveedor ya existe con el mismo nombre, teléfono o correo electrónico';
-      END IF;
+    -- Validar que el nombre del contacto no esté vacío
+    IF p_nombre_contacto IS NULL OR p_nombre_contacto = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El nombre del contacto no puede estar vacío';
+    END IF;
 
-  END //
+    -- Validar que el teléfono no esté vacío y sea único
+    IF p_telefono IS NULL OR p_telefono = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El teléfono no puede estar vacío';
+    ELSE
+        SELECT COUNT(id) INTO proveedor_existe
+        FROM proveedor
+        WHERE telefono = p_telefono;
+        
+        IF proveedor_existe > 0 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'El teléfono ya está en uso por otro proveedor';
+        END IF;
+    END IF;
 
-  DELIMITER ;
+    -- Validar que el correo electrónico no esté vacío y sea único
+    IF p_correo_electronico IS NULL OR p_correo_electronico = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El correo electrónico no puede estar vacío';
+    ELSE
+        SELECT COUNT(id) INTO proveedor_existe
+        FROM proveedor
+        WHERE correo_electronico = p_correo_electronico;
+        
+        IF proveedor_existe > 0 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'El correo electrónico ya está en uso por otro proveedor';
+        END IF;
+    END IF;
+
+    -- Validar que la ciudad exista
+    SELECT COUNT(id) INTO ciudad_existe
+    FROM ciudad
+    WHERE id = p_id_ciudad;
+
+    IF ciudad_existe = 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'La ciudad no existe';
+    END IF;
+
+    -- Insertar el nuevo proveedor si todas las validaciones pasan
+    INSERT INTO proveedor (nombre_proveedor, nombre_contacto, telefono, correo_electronico, id_ciudad)
+    VALUES (p_nombre_proveedor, p_nombre_contacto, p_telefono, p_correo_electronico, p_id_ciudad);
+END //
+
+DELIMITER ;
+
+CALL insertar_proveedor('Nuevo Proveedor', 'Nuevo Contacto', '60124567', 'nuevo.correo@example.com', 1);
 
 ```
-```sql
-  CALL insertar_proveedor('Proveedor H', 'Contacto H', '608901234', 'contacto.h@example.com', 1);
-```
+
 
 5. El administrador selecciona la opción para agregar un nuevo repuesto.
 6. El administrador ingresa los detalles del repuesto (nombre, descripción, precio, stock,
@@ -280,7 +322,52 @@ proveedor).
 7. El sistema valida y guarda la información del nuevo repuesto.
 
 ```sql
+CREATE PROCEDURE insertar_repuesto(
+    IN p_nombre_repuesto VARCHAR(20),
+    IN p_descripcion_repuesto TEXT,
+    IN p_precio DOUBLE,
+    IN p_stock INT,
+    IN p_id_proveedor INT
+)
+BEGIN
+    DECLARE proveedor_existe INT;
 
+    -- Validar que el nombre del repuesto no esté vacío
+    IF p_nombre_repuesto IS NULL OR p_nombre_repuesto = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El nombre del repuesto no puede estar vacío';
+    END IF;
+
+    -- Validar que el precio sea mayor que 0
+    IF p_precio <= 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El precio debe ser mayor que 0';
+    END IF;
+
+    -- Validar que el stock no sea negativo
+    IF p_stock < 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El stock no puede ser negativo';
+    END IF;
+
+    -- Validar que el proveedor exista
+    SELECT COUNT(id) INTO proveedor_existe
+    FROM proveedor
+    WHERE id = p_id_proveedor;
+
+    IF proveedor_existe = 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El proveedor no existe';
+    END IF;
+
+    -- Insertar el nuevo repuesto si todas las validaciones pasan
+    INSERT INTO repuesto (nombre_repuesto, descripcion_repuesto, precio, stock, id_proveedor)
+    VALUES (p_nombre_repuesto, p_descripcion_repuesto, p_precio, p_stock, p_id_proveedor);
+END //
+
+DELIMITER ;
+
+CALL insertar_repuesto('Nuevo Repuesto', 'Descripción del nuevo repuesto', 100.00, 10, 1);
    ```
 
 8. El administrador selecciona un proveedor existente para actualizar.
@@ -288,6 +375,98 @@ proveedor).
 10. El sistema valida y guarda los cambios.
 
 ```sql
+DELIMITER //
+
+CREATE PROCEDURE actualizar_proveedor(
+    IN p_id INT,
+    IN p_nombre_proveedor VARCHAR(20),
+    IN p_nombre_contacto VARCHAR(20),
+    IN p_telefono VARCHAR(15),
+    IN p_correo_electronico VARCHAR(50),
+    IN p_id_ciudad INT
+)
+BEGIN
+    DECLARE proveedor_existe INT;
+    DECLARE ciudad_existe INT;
+    DECLARE telefono_existe INT;
+    DECLARE correo_existe INT;
+
+    -- Validar que el proveedor exista
+    SELECT COUNT(id) INTO proveedor_existe
+    FROM proveedor
+    WHERE id = p_id;
+
+    IF proveedor_existe = 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El proveedor no existe';
+    END IF;
+
+    -- Validar que el nombre del proveedor no esté vacío
+    IF p_nombre_proveedor IS NULL OR p_nombre_proveedor = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El nombre del proveedor no puede estar vacío';
+    END IF;
+
+    -- Validar que el nombre del contacto no esté vacío
+    IF p_nombre_contacto IS NULL OR p_nombre_contacto = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El nombre del contacto no puede estar vacío';
+    END IF;
+
+    -- Validar que el teléfono no esté vacío y sea único
+    IF p_telefono IS NULL OR p_telefono = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El teléfono no puede estar vacío';
+    ELSE
+        SELECT COUNT(id) INTO telefono_existe
+        FROM proveedor
+        WHERE telefono = p_telefono AND id <> p_id;
+        
+        IF telefono_existe > 0 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'El teléfono ya está en uso por otro proveedor';
+        END IF;
+    END IF;
+
+    -- Validar que el correo electrónico no esté vacío y sea único
+    IF p_correo_electronico IS NULL OR p_correo_electronico = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El correo electrónico no puede estar vacío';
+    ELSE
+        SELECT COUNT(id) INTO correo_existe
+        FROM proveedor
+        WHERE correo_electronico = p_correo_electronico AND id <> p_id;
+        
+        IF correo_existe > 0 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'El correo electrónico ya está en uso por otro proveedor';
+        END IF;
+    END IF;
+
+    -- Validar que la ciudad exista
+    SELECT COUNT(id) INTO ciudad_existe
+    FROM ciudad
+    WHERE id = p_id_ciudad;
+
+    IF ciudad_existe = 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'La ciudad no existe';
+    END IF;
+
+    -- Actualizar el proveedor si todas las validaciones pasan
+    UPDATE proveedor
+    SET nombre_proveedor = p_nombre_proveedor,
+        nombre_contacto = p_nombre_contacto,
+        telefono = p_telefono,
+        correo_electronico = p_correo_electronico,
+        id_ciudad = p_id_ciudad
+    WHERE id = p_id;
+END //
+
+DELIMITER ;
+
+
+CALL actualizar_proveedor(1, 'actual Proveedor', 'actual Contacto', '601234567', 'actual.correo@example.com', 2);
 
    ```
 
@@ -296,20 +475,151 @@ proveedor).
 13. El sistema valida y guarda los cambios.
 
 ```sql
+DELIMITER //
 
+CREATE PROCEDURE actualizar_repuesto(
+    IN p_id INT,
+    IN p_nombre_repuesto VARCHAR(20),
+    IN p_descripcion_repuesto TEXT,
+    IN p_precio DOUBLE,
+    IN p_stock INT,
+    IN p_id_proveedor INT
+)
+BEGIN
+    DECLARE repuesto_existe INT;
+    DECLARE proveedor_existe INT;
+
+    -- Validar que el repuesto exista
+    SELECT COUNT(id) INTO repuesto_existe
+    FROM repuesto
+    WHERE id = p_id;
+
+    IF repuesto_existe = 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El repuesto no existe';
+    END IF;
+
+    -- Validar que el proveedor exista
+    SELECT COUNT(id) INTO proveedor_existe
+    FROM proveedor
+    WHERE id = p_id_proveedor;
+
+    IF proveedor_existe = 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El proveedor no existe';
+    END IF;
+
+    -- Validar que el nombre del repuesto no esté vacío
+    IF p_nombre_repuesto IS NULL OR p_nombre_repuesto = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El nombre del repuesto no puede estar vacío';
+    END IF;
+
+    -- Validar que el precio sea mayor que 0
+    IF p_precio <= 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El precio debe ser mayor que 0';
+    END IF;
+
+    -- Validar que el stock no sea negativo
+    IF p_stock < 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El stock no puede ser negativo';
+    END IF;
+
+    -- Actualizar el repuesto si todas las validaciones pasan
+    UPDATE repuesto
+    SET nombre_repuesto = p_nombre_repuesto,
+        descripcion_repuesto = p_descripcion_repuesto,
+        precio = p_precio,
+        stock = p_stock,
+        id_proveedor = p_id_proveedor
+    WHERE id = p_id;
+END //
+
+DELIMITER ;
+
+CALL actualizar_repuesto(1, 'Nuevo Repuesto', 'Nueva Descripción', 120.00, 15, 2);
    ```
 
 14. El administrador selecciona un proveedor para eliminar.
 15. El sistema elimina el proveedor seleccionado.
 
 ```sql
+DELIMITER //
 
+CREATE PROCEDURE eliminar_proveedor(
+    IN p_id INT
+)
+BEGIN
+    DECLARE proveedor_existe INT;
+
+    -- Validar que el proveedor exista
+    SELECT COUNT(id) INTO proveedor_existe
+    FROM proveedor
+    WHERE id = p_id;
+
+    IF proveedor_existe = 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El proveedor no existe';
+    END IF;
+
+    -- Eliminar registros relacionados en la tabla repuesto
+    DELETE FROM repuesto
+    WHERE id_proveedor = p_id;
+
+    -- Eliminar registros relacionados en la tabla compra
+    DELETE FROM compra
+    WHERE id_proveedor = p_id;
+
+    -- Eliminar el proveedor
+    DELETE FROM proveedor
+    WHERE id = p_id;
+END //
+
+DELIMITER ;
+
+
+CALL eliminar_proveedor(8);
    ```
 
 16. El administrador selecciona un repuesto para eliminar.
 17. El sistema elimina el repuesto seleccionado.
 
 ```sql
+DELIMITER //
+
+CREATE PROCEDURE eliminar_repuesto(
+    IN p_id INT
+)
+BEGIN
+    DECLARE repuesto_existe INT;
+
+    -- Validar que el repuesto exista
+    SELECT COUNT(id) INTO repuesto_existe
+    FROM repuesto
+    WHERE id = p_id;
+
+    IF repuesto_existe = 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El repuesto no existe';
+    END IF;
+
+
+    -- Eliminar registros relacionados en detalle_compra
+    DELETE FROM detalle_compra
+    WHERE id_repuesto = p_id;
+
+    -- Eliminar el repuesto
+    DELETE FROM repuesto
+    WHERE id = p_id;
+END //
+
+DELIMITER ;
+
+
+CALL eliminar_repuesto(7);
+
 
    ```
 
@@ -448,6 +758,34 @@ Administrador
 3. El sistema muestra una lista de marcas y el modelo de bicicleta más vendido para cada
 marca.
 
+```sql
+
+   SELECT 
+      mb.nombre_marca,
+      mbm.nombre_modelo,
+      MAX(ventas_por_modelo.total_vendido) AS total_vendido
+   FROM 
+      marca_bicicleta mb
+   JOIN 
+      modelo_bicicleta mbm ON mb.id = mbm.id_marca_bicicleta
+   JOIN 
+      (SELECT 
+         id_modelo_bicicleta,
+         SUM(cantidad) AS total_vendido
+      FROM 
+         detalle_venta dv
+      JOIN 
+         bicicleta b ON dv.id_bicicleta = b.id
+      GROUP BY 
+         id_modelo_bicicleta
+      ) ventas_por_modelo ON mbm.id = ventas_por_modelo.id_modelo_bicicleta
+   GROUP BY 
+      mb.nombre_marca, mbm.nombre_modelo
+   ORDER BY 
+      total_vendido DESC;
+
+   ```
+
 ### Caso de Uso 7: Clientes con Mayor Gasto en un Año Específico
 
 **Descripción: Este caso de uso describe cómo el sistema permite consultar los clientes que han**
@@ -466,6 +804,31 @@ específico.
 4. El sistema muestra una lista de los clientes que han gastado más en ese año, ordenados por
 total gastado.
 
+```sql
+
+SELECT 
+    c.nombre_cliente,
+    c.correo_electronico,
+    c.telefono,
+    ventas_por_cliente.total_gastado
+FROM 
+    cliente c
+JOIN 
+    (SELECT 
+        v.id_cliente,
+        SUM(v.total) AS total_gastado
+     FROM 
+        venta v
+     WHERE 
+        YEAR(v.fecha_venta) = 2024
+     GROUP BY 
+        v.id_cliente
+    ) ventas_por_cliente ON c.id = ventas_por_cliente.id_cliente
+ORDER BY 
+    ventas_por_cliente.total_gastado DESC;
+
+   ```
+
 ### Caso de Uso 8: Proveedores con Más Compras en el Último Mes
 
 **Descripción: Este caso de uso describe cómo el sistema permite consultar los proveedores que**
@@ -483,6 +846,10 @@ Administrador de Compras
 3. El sistema muestra una lista de proveedores ordenados por el número de compras recibidas
 en el último mes.
 
+```sql
+
+   ```
+
 ### Caso de Uso 9: Repuestos con Menor Rotación en el Inventario
 Descripción: Este caso de uso describe cómo el sistema permite consultar los repuestos que han
 tenido menor rotación en el inventario, es decir, los menos vendidos.
@@ -495,6 +862,10 @@ Flujo Principal:
 3. El sistema muestra una lista de repuestos ordenados por la cantidad vendida, de menor a
 mayor.
 
+```sql
+
+   ```
+
 ###Caso de Uso 10: Ciudades con Más Ventas Realizadas
 Descripción: Este caso de uso describe cómo el sistema permite consultar las ciudades donde se
 han realizado más ventas de bicicletas.
@@ -506,6 +877,29 @@ Flujo Principal:
 2. El administrador selecciona la opción para consultar las ciudades con más ventas realizadas.
 3. El sistema muestra una lista de ciudades ordenadas por la cantidad de ventas realizadas.
 
+```sql
+
+SELECT 
+    ci.nombre_ciudad,
+    ventas_por_ciudad.cantidad_ventas
+FROM 
+    ciudad ci
+JOIN 
+    (SELECT 
+        cl.id_ciudad,
+        COUNT(v.id) AS cantidad_ventas
+     FROM 
+        venta v
+     JOIN 
+        cliente cl ON v.id_cliente = cl.id
+     GROUP BY 
+        cl.id_ciudad
+    ) ventas_por_ciudad ON ci.id = ventas_por_ciudad.id_ciudad
+ORDER BY 
+    ventas_por_ciudad.cantidad_ventas DESC;
+    
+
+   ```
 
 ## Casos de Uso con Joins
 
