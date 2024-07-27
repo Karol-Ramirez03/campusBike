@@ -356,7 +356,7 @@ precio).
    CREATE PROCEDURE DetallesVentasRealizadaPorCliente(IN id VARCHAR(60))
    BEGIN
       SELECT v.id, v.fecha_venta, v.id_cliente, v.total, d.id_bicicleta, d.Cantidad, d.Precio_unitario
-      FROM Venta v
+      FROM venta v
       JOIN detalle_Venta d ON v.id = d.id_venta
       WHERE v.id_cliente = id;
    END$$
