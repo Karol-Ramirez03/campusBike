@@ -1,15 +1,23 @@
 4. El sistema muestra una lista de los clientes que han gastado más en ese año, ordenados por total gastado.
-SELECT
+
+SELECT 
     c.nombre_cliente,
     c.correo_electronico,
     c.telefono,
-    SUM(v.total) AS total_gastado
-FROM
+    ventas_por_cliente.total_gastado
+FROM 
     cliente c
-    JOIN venta v ON c.id = v.id_cliente
-WHERE
-    YEAR(v.fecha_venta) = 2024
-GROUP BY
-    c.id
-ORDER BY
-    total_gastado DESC;
+JOIN 
+    (SELECT 
+        v.id_cliente,
+        SUM(v.total) AS total_gastado
+     FROM 
+        venta v
+     WHERE 
+        YEAR(v.fecha_venta) = 2024
+     GROUP BY 
+        v.id_cliente
+    ) ventas_por_cliente ON c.id = ventas_por_cliente.id_cliente
+ORDER BY 
+    ventas_por_cliente.total_gastado DESC;
+
