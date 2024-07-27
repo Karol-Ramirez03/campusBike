@@ -15,3 +15,5 @@ GROUP BY
     p.id
 ORDER BY
     numero_compras DESC;
+
+

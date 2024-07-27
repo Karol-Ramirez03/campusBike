@@ -112,3 +112,6 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+-- reconocer cambios
