@@ -107,3 +107,6 @@ INSERT INTO detalle_compra (id_compra, id_repuesto, cantidad, precio_unitario) V
 (5, 5, 10, 300.00),
 (6, 6, 10, 350.00),
 (7, 7, 10, 400.00);
+
+INSERT INTO compra (fecha_compra, id_proveedor, total) VALUES 
+('2024-12-01', 1, 1000.00),

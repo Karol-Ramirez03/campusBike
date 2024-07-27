@@ -848,6 +848,15 @@ en el último mes.
 
 ```sql
 
+    SELECT p.nombre_proveedor, mp.compras_proveedor
+    FROM proveedor p
+    JOIN (
+        SELECT id_proveedor, COUNT(c.id) AS compras_proveedor
+        FROM compra c
+        WHERE MONTH(c.fecha_compra) = MONTH(NOW() - INTERVAL 1 MONTH) -- para obtener el mes antes de este
+        GROUP BY c.id_proveedor
+    ) mp ON mp.id_proveedor = p.id;
+
    ```
 
 ### Caso de Uso 9: Repuestos con Menor Rotación en el Inventario
@@ -863,6 +872,14 @@ Flujo Principal:
 mayor.
 
 ```sql
+    SELECT r.nombre_repuesto, dc.cantidad_vendida
+    FROM repuesto r
+    JOIN (
+    SELECT id_repuesto, SUM(dv.cantidad) AS cantidad_vendida
+    FROM detalle_compra dv
+    GROUP BY id_repuesto
+    ) dc ON dc.id_repuesto = r.id 
+    ORDER BY dc.cantidad_vendida ASC;
 
    ```
 
