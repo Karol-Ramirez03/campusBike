@@ -1,73 +1,61 @@
-//nuuevas ventas y detalles venta y actualizar el stock
-procedimiento de insert y triggers para verificar el stock
+--nuuevas ventas y detalles venta y actualizar el stock
+--procedimiento de insert y triggers para verificar el stock
 
-
-
-&&&&&&&&&&&&&&&&&&&&&&&&&&&&&6
-comprobar insert venta
-DELIMITER $$ 
-DROP PROCEDURE IF EXISTS registrarVenta$$
-CREATE PROCEDURE registrarVenta(
-    IN inClienteId VARCHAR(10),
-    OUT outVentaId INT 
-) 
-BEGIN 
-    /* Se crea una nueva venta con total inicial de 0
-        para que luego el sistema calcule el total en
-        base a los detalles de la venta */
-    INSERT INTO venta(fecha,clienteId,total)
-    VALUES (NOW(), inClienteId, 0);
-
-    /* Se saca el valor del id para utilizarlo luego */
-    SET outVentaId = LAST_INSERT_ID();
-END $$
-DELIMITER ;
-
-
+/*
+1. El vendedor ingresa al sistema.
+2. El vendedor selecciona la opción para registrar una nueva venta.
+3. El vendedor selecciona el cliente que realiza la compra.
+4. El vendedor selecciona las bicicletas que el cliente desea comprar y especifica la cantidad.
+5. El sistema calcula el total de la venta.
+6. El vendedor confirma la venta.
+7. El sistema guarda la venta y actualiza el inventario de bicicletas.
+*/
 
 
 DELIMITER $$
-DROP PROCEDURE IF EXISTS registrarDetalleVenta$$
-CREATE PROCEDURE RegistrarDetalleVenta(
-    IN inVentaId INT,
-    IN inBicicletaId INT,
-    IN inCantidad INT
+DROP PROCEDURE IF EXISTS registrarVentaConDetalles$$
+CREATE PROCEDURE registrarVentaConDetalles(
+    IN clienteid VARCHAR(10),
+    IN biciId INT,
+    IN Cantidad INT,
+    OUT outVentaId INT 
 )
 BEGIN
-    DECLARE precioUnitario DECIMAL(10, 2);
-    DECLARE totalDetalle DECIMAL(10, 2);
-    DECLARE totalActual DECIMAL(10, 2);
+    DECLARE precioUnitario DOUBLE;
+    DECLARE totalDetalle DOUBLE;
+    
+    INSERT INTO venta(fecha_venta, id_cliente, total)
+    VALUES (NOW(), clienteid,0);
 
+    SET outVentaId = LAST_INSERT_ID();
+    
     SELECT precio INTO precioUnitario
     FROM bicicleta
-    WHERE id = inBicicletaId;
+    WHERE id = biciId;
 
-    SET totalDetalle = precioUnitario * inCantidad;
+    SET totalDetalle = precioUnitario * Cantidad;
 
-    INSERT INTO detalle_Venta (id_venta, id_bicicleta, cantidad, precio_unitario)
-    VALUES (inVentaId, inBicicletaId, inCantidad, precioUnitario);
-
-    SELECT COALESCE(total, 0) INTO totalActual
-    FROM venta
-    WHERE id = inVentaId;
+    INSERT INTO detalle_venta (id_venta, id_bicicleta, cantidad, precio_unitario)
+    VALUES (outVentaId, biciId, Cantidad, precioUnitario);
 
     UPDATE venta
-    SET total = totalActual + totalDetalle
-    WHERE id = inVentaId;
+    SET total = totalDetalle
+    WHERE id = outVentaId;
 
     UPDATE bicicleta
-    SET stock = stock - inCantidad
-    WHERE id = inBicicletaId;
+    SET stock = stock - Cantidad
+    WHERE id = biciId;
+    
 END $$
+
 DELIMITER ;
 
-
-triggers
+-- triggers para verificar el stock
 
 
 DELIMITER $$
-DROP TRIGGER IF EXISTS verificarStockAntesDeVenta$$
-CREATE TRIGGER verificarStockAntesDeVenta
+DROP TRIGGER IF EXISTS verificaionStock$$
+CREATE TRIGGER verificaionStock
 BEFORE INSERT ON detalle_Venta
 FOR EACH ROW
 BEGIN
@@ -83,4 +71,5 @@ BEGIN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Stock insuficiente para la bicicleta seleccionada';
     END IF;
 END;
+DELIMITER ;
 

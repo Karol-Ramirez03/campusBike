@@ -40,7 +40,7 @@ CREATE TABLE bicicleta (
     CONSTRAINT pk_id_bicicleta PRIMARY KEY (id),
     CONSTRAINT fk_id_modelo_bicicleta FOREIGN KEY (id_modelo_bicicleta) REFERENCES modelo_bicicleta(id),
     CONSTRAINT fk_id_marca_ FOREIGN KEY (id_marca_bicicleta) REFERENCES marca_bicicleta(id),
-    CONSTRAINT chk_precio_stock CHECK (precio > 0 AND stock > 0)
+    CONSTRAINT chk_precio_stock CHECK (precio > 0 AND stock >= 0)
 );
 
 CREATE TABLE cliente (
@@ -60,7 +60,7 @@ CREATE TABLE venta (
     total DOUBLE,
     CONSTRAINT pk_id_venta PRIMARY KEY (id),
     CONSTRAINT fk_id_cliente FOREIGN KEY (id_cliente) REFERENCES cliente(id),
-    CONSTRAINT chk_total CHECK (total > 0)
+    CONSTRAINT chk_total CHECK (total >= 0)
 );
 
 CREATE TABLE detalle_venta (
@@ -105,7 +105,7 @@ CREATE TABLE compra (
     total DOUBLE,
     CONSTRAINT pk_id_compra PRIMARY KEY (id),
     CONSTRAINT fk_id_proveedor_compra FOREIGN KEY (id_proveedor) REFERENCES proveedor(id),
-    CONSTRAINT chk_total_compra CHECK (total > 0)
+    CONSTRAINT chk_total_compra CHECK (total >= 0)
 );
 
 CREATE TABLE detalle_compra (

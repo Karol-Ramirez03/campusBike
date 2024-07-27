@@ -24,14 +24,12 @@ BEGIN
     UPDATE compra
     SET total = total + total_compra
     WHERE id = id_compraidc;
-
-
 END$$
-
 DELIMITER ;
 
-DELIMITER $$
+--trigger para actualizar el stock
 
+DELIMITER $$
 DROP TRIGGER IF EXISTS actualizarStockRepuestos$$
 CREATE TRIGGER actualizarStockRepuestos
 AFTER INSERT ON detalle_compra

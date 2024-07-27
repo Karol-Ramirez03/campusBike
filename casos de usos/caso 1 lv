@@ -1,21 +1,31 @@
-/*crear procedimiento para el insert de bicicletas*/
--- YA TODO VERIFICADO
+/*
+1. El administrador de inventario ingresa al sistema.
+2. El administrador selecciona la opción para agregar una nueva bicicleta.
+3. El administrador ingresa los detalles de la bicicleta (modelo, marca, precio, stock).
+4. El sistema valida y guarda la información de la nueva bicicleta.
+5. El administrador selecciona una bicicleta existente para actualizar.
+6. El administrador actualiza la información (precio, stock).
+7. El sistema valida y guarda los cambios.
+8. El administrador selecciona una bicicleta para eliminar.
+9. El sistema elimina la bicicleta seleccionada del inventario
+*/
 
+-- procedimiento para agregar cicla
 DELIMITER $$
 CREATE PROCEDURE addBicicleta(
-    IN newModelo INT,
-    IN newMarca INT,
-    IN newPrecio DOUBLE,
-    IN newStock INT
+    IN modeloid INT,
+    IN marcaid INT,
+    IN precios DOUBLE,
+    IN stockbici INT
 )
 BEGIN
     INSERT INTO bicicleta (id_modelo_bicicleta, id_marca_bicicleta, precio, stock) 
-    VALUES (newModelo, newMarca, newPrecio, newStock);
+    VALUES (modeloid, marcaid, precios, stockbici);
 END $$
 DELIMITER ;
 
--- ACTUALIZAR BICI POR EL STOCK Y PRECIO
 
+--procedimient para actualizar
 DELIMITER $$
 CREATE PROCEDURE updateStockBici(
     IN BicicletaId INT,
@@ -29,7 +39,7 @@ BEGIN
 END$$
 DELIMITER ;
 
---DELETE PROCEDIMENTO
+--procedimiento para eliminar
 
 DELIMITER $$
 CREATE PROCEDURE deleteBici(
@@ -76,8 +86,8 @@ CREATE TRIGGER stockNegativoIns
 BEFORE INSERT ON bicicleta
 FOR EACH ROW
 BEGIN
-    IF NEW.stock < 0 OR NEW.precio < 0 THEN -- Si se inserta un valor negativo para el stock --
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El "STOCK" y el "PRECIO" no pueden ser negativo'; -- Enviar un mensaje --
+    IF NEW.stock < 0 OR NEW.precio < 0 THEN 
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El "STOCK" y el "PRECIO" no pueden ser negativo';
     END IF;
 END $$
 DELIMITER ;

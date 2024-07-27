@@ -6,9 +6,9 @@
 DELIMITER $$
 CREATE PROCEDURE CalcularTotalVentasPorDiaSemana()
 BEGIN
-    SELECT DAYNAME(fecha_venta) AS dia_semana, SUM(total) AS total_ventas
+    SELECT DAY(fecha_venta) AS dia_semana, SUM(total) AS total_ventas
     FROM venta
-    GROUP BY DAYNAME(fecha_venta);
+    GROUP BY DAY(fecha_venta);
     
 END $$
 

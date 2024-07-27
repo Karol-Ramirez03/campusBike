@@ -11,8 +11,7 @@ BEGIN
     SELECT c.id AS id_cliente, c.nombre_cliente, SUM(v.total) AS total_ingresos
     FROM cliente c
     JOIN venta v ON c.id = v.id_cliente
-    GROUP BY c.id, c.nombre_cliente
-    
+    GROUP BY c.id, c.nombre_cliente;
 END $$
 
 DELIMITER ;
