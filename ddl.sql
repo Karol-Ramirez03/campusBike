@@ -119,3 +119,12 @@ CREATE TABLE detalle_compra (
     CONSTRAINT fk_id_repuesto FOREIGN KEY (id_repuesto) REFERENCES repuesto(id),
     CONSTRAINT chk_precio_cantidad_detalle_compra CHECK (precio_unitario > 0 AND cantidad > 0)
 );
+
+CREATE TABLE devolucion (
+    id INT AUTO_INCREMENT,
+    id_detalle_venta INT NOT NULL,
+    fecha_devolucion DATE,
+    CONSTRAINT pk_id_devolucion PRIMARY KEY (id),
+    CONSTRAINT fk_id_detalle_devolucion FOREIGN KEY (id_detalle_venta) REFERENCES detalle_venta(id)
+);
+
