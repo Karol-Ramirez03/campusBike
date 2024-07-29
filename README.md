@@ -1477,6 +1477,30 @@ Flujo Principal:
 ```sql
 
 
+DELIMITER $$
+
+CREATE PROCEDURE registrarDevolucion(
+    IN p_id_detalle_venta INT
+)
+BEGIN
+    DECLARE v_id_bicicleta INT;
+    DECLARE v_cantidad INT;
+    DECLARE v_stock INT;
+
+    SELECT id_bicicleta, cantidad INTO v_id_bicicleta, v_cantidad
+    FROM detalle_venta
+    WHERE id = p_id_detalle_venta;
+
+    INSERT INTO devolucion (id_detalle_venta, fecha_devolucion)
+    VALUES (p_id_detalle_venta, NOW());
+
+    UPDATE bicicleta
+    SET stock = stock + v_cantidad
+    WHERE id = v_id_bicicleta;
+END $$
+DELIMITER ;
+
+CALL registrarDevolucion(1);
 
 ```
 
@@ -1493,6 +1517,34 @@ Flujo Principal:
 proveedor.
 
 ```sql
+CREATE PROCEDURE GenerarReporteVentas()
+BEGIN
+    SELECT
+        v.id AS id_venta,
+        v.fecha_venta,
+        c.nombre_cliente,
+        ci.nombre_ciudad,
+        m.nombre_modelo AS nombre_bicicleta,
+        d.cantidad,
+        d.precio_unitario,
+        (d.cantidad * d.precio_unitario) AS total_venta
+    FROM
+        venta v
+    INNER JOIN
+        cliente c ON v.id_cliente = c.id
+    INNER JOIN
+        ciudad ci ON c.id_ciudad = ci.id
+    INNER JOIN
+        detalle_venta d ON v.id = d.id_venta
+    INNER JOIN
+        bicicleta b ON d.id_bicicleta = b.id
+    INNER JOIN
+        modelo_bicicleta m ON b.id_modelo_bicicleta = m.id
+    ORDER BY
+        v.fecha_venta;
+END$$
+
+DELIMITER ;
 
 
 
@@ -1511,6 +1563,21 @@ Flujo Principal:
 
 ```sql
 
+DELIMITER $$
+
+CREATE PROCEDURE CalcularTotalConDescuento(
+    IN p_id_venta INT,
+    IN p_porcentaje_descuento DOUBLE
+)
+BEGIN
+    SELECT SUM(d.cantidad * d.precio_unitario) * (1 - p_porcentaje_descuento / 100) AS total_con_descuento
+    FROM detalle_venta d
+    WHERE d.id_venta = p_id_venta;
+END$$
+
+DELIMITER ;
+
+CALL CalcularTotalConDescuento(1, 10);
 
 
 ```
