@@ -12,7 +12,7 @@ DELIMITER $$
 DROP PROCEDURE IF EXISTS ContarVentasEnRangoFechas $$
 CREATE PROCEDURE ContarVentasEnRangoFechas(IN fechaInicio DATE, IN fechaFin DATE)
 BEGIN
-    SELECT COUNT(*) AS numero_ventas
+    SELECT COUNT(id) AS numero_ventas
     FROM venta
     WHERE fecha_venta BETWEEN fechaInicio AND fechaFin;
 END$$
